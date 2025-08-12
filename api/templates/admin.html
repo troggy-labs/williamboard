@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f9fafb;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .status.green {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status.red {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.orange {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .status.blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status.gray {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .score {
+            font-weight: 600;
+        }
+        
+        .score.high { color: #059669; }
+        .score.medium { color: #d97706; }
+        .score.low { color: #dc2626; }
+        
+        .event-details {
+            max-width: 300px;
+        }
+        
+        .event-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .event-meta {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .geocode-info {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .timestamp {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 2rem;
+            text-align: center;
+        }
+        
+        .moderation-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: column;
+        }
+        
+        .btn {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .action-form {
+            display: inline-block;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{.title}}</h1>
+    </div>
+
+    {{if .error}}
+        <div class="error">
+            {{.error}}
+        </div>
+    {{else}}
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{.stats.total}}</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{.stats.published}}</div>
+                <div class="stat-label">Published</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{.stats.needs_review}}</div>
+                <div class="stat-label">Needs Review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{.stats.blocked}}</div>
+                <div class="stat-label">Blocked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{.stats.recent_24h}}</div>
+                <div class="stat-label">Last 24h</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="table-container">
+                {{if .candidates}}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Event</th>
+                                <th>Event Date</th>
+                                <th>Status</th>
+                                <th>Quality Score</th>
+                                <th>Location</th>
+                                <th>Confidence</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .candidates}}
+                                <tr>
+                                    <td>
+                                        {{if .ThumbnailURL}}
+                                            <a href="{{.OriginalImageURL}}" target="_blank" title="View full image">
+                                                <img src="{{.ThumbnailURL}}" alt="Event flyer thumbnail" 
+                                                     style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; cursor: pointer;" />
+                                            </a>
+                                        {{else}}
+                                            <div style="width: 60px; height: 80px; background: #f3f4f6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.75rem;">
+                                                No Image
+                                            </div>
+                                        {{end}}
+                                    </td>
+                                    <td class="event-details">
+                                        <div class="event-title">{{.Title}}</div>
+                                        <div class="event-meta">
+                                            {{if .Venue}}📍 {{.Venue}}{{end}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{if .PublishedEventStartTime}}
+                                            <div style="color: #059669; font-weight: 600; margin-bottom: 0.25rem;">
+                                                📅 {{.PublishedEventStartTime.Format "Jan 2, 2006 3:04 PM"}}
+                                            </div>
+                                            <div style="color: #6b7280; font-size: 0.75rem;">Published Event Date</div>
+                                        {{else if .Date}}
+                                            <div style="color: #374151; font-weight: 500;">{{.Date}}</div>
+                                            <div style="color: #6b7280; font-size: 0.75rem;">Extracted from Flyer</div>
+                                        {{else}}
+                                            <div style="color: #9ca3af; font-style: italic; font-size: 0.875rem;">No date extracted</div>
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        <span class="status {{.StatusColor}}">{{.Status}}</span>
+                                        {{if .PublicationReason}}
+                                            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                                                {{.PublicationReason}}
+                                            </div>
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        {{if gt .QualityScore 0}}
+                                            <span class="score {{if ge .QualityScore 0.8}}high{{else if ge .QualityScore 0.6}}medium{{else}}low{{end}}">
+                                                {{printf "%.2f" .QualityScore}}
+                                            </span>
+                                        {{else}}
+                                            <span style="color: #9ca3af;">-</span>
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        {{if .Address}}
+                                            <div>{{.Address}}</div>
+                                        {{else if .Venue}}
+                                            <div>{{.Venue}}</div>
+                                        {{else}}
+                                            <span style="color: #9ca3af;">No location</span>
+                                        {{end}}
+                                        {{if .Geocode}}
+                                            <div class="geocode-info">
+                                                {{if .Geocode.latitude}}📍 {{printf "%.4f" .Geocode.latitude}}, {{printf "%.4f" .Geocode.longitude}}{{end}}
+                                                {{if .Geocode.confidence}}<br>🎯 {{printf "%.0f%%" (mul .Geocode.confidence 100)}} confidence{{end}}
+                                            </div>
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        {{if gt .Confidence 0}}
+                                            <span class="score {{if ge .Confidence 0.8}}high{{else if ge .Confidence 0.6}}medium{{else}}low{{end}}">
+                                                {{printf "%.0f%%" (mul .Confidence 100)}}
+                                            </span>
+                                        {{else}}
+                                            <span style="color: #9ca3af;">-</span>
+                                        {{end}}
+                                    </td>
+                                    <td class="timestamp">
+                                        {{.CreatedAt.Format "Jan 2, 15:04"}}
+                                    </td>
+                                    <td>
+                                        <div class="moderation-actions">
+                                            {{if eq .Status "Needs Review"}}
+                                                <form class="action-form" method="POST" action="/admin/moderate/{{.ID}}">
+                                                    <input type="hidden" name="action" value="approve">
+                                                    <button type="submit" class="btn btn-approve btn-small">✓ Approve</button>
+                                                </form>
+                                                <form class="action-form" method="POST" action="/admin/moderate/{{.ID}}">
+                                                    <input type="hidden" name="action" value="reject">
+                                                    <button type="submit" class="btn btn-reject btn-small">✗ Reject</button>
+                                                </form>
+                                            {{else if eq .Status "Published"}}
+                                                <form class="action-form" method="POST" action="/admin/moderate/{{.ID}}">
+                                                    <input type="hidden" name="action" value="reject">
+                                                    <button type="submit" class="btn btn-secondary btn-small">Block</button>
+                                                </form>
+                                            {{else if eq .Status "Blocked"}}
+                                                <form class="action-form" method="POST" action="/admin/moderate/{{.ID}}">
+                                                    <input type="hidden" name="action" value="approve">
+                                                    <button type="submit" class="btn btn-secondary btn-small">Unblock</button>
+                                                </form>
+                                            {{end}}
+                                            <a href="/v1/submissions/{{.FlyerID}}/status" 
+                                               class="btn btn-secondary btn-small" style="margin-top: 0.25rem;">
+                                                Details
+                                            </a>
+                                            <a href="/admin/raw/{{.ID}}" 
+                                               class="btn btn-secondary btn-small" target="_blank" style="margin-top: 0.25rem;">
+                                                Raw Data
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                {{else}}
+                    <div class="no-data">
+                        <h3>No events found</h3>
+                        <p>Upload some bulletin board images to see extracted events here.</p>
+                    </div>
+                {{end}}
+            </div>
+        </div>
+    {{end}}
+</body>
+</html>

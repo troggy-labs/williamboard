@@ -1,0 +1,78 @@
+# Render deployment configuration for WilliamBoard
+services:
+  # Main API service with integrated processing
+  - type: web
+    name: williamboard-api
+    env: go
+    region: oregon
+    plan: starter
+    buildCommand: go build -o williamboard-api ./api
+    startCommand: ./williamboard-api
+    disk:
+      name: williamboard-uploads
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: APP_NAME
+        value: WilliamBoard
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 10000  # Render assigns this port
+      - key: UPLOAD_DIR
+        value: /data/uploads
+      - key: DATABASE_URL
+        fromDatabase:
+          name: williamboard-postgres
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false  # Set manually in dashboard
+      - key: OPENAI_MODEL
+        value: gpt-4o
+      - key: OPENAI_TIMEOUT_MS
+        value: "90000"
+      - key: STRUCTURED_OUTPUT
+        value: "true"
+      - key: IMAGE_MAX_LONG_SIDE
+        value: "2048"
+      - key: IMAGE_JPEG_QUALITY
+        value: "85"
+      - key: PUBLIC_BASE_URL
+        fromService:
+          type: web
+          name: williamboard-api
+          property: host
+      - key: ICS_UID_DOMAIN
+        value: williamboard.app
+      - key: ICS_PRODID
+        value: -//WilliamBoard//EN
+      - key: REGION_TZ
+        value: America/Los_Angeles
+      # Auto-publish settings
+      - key: AUTO_PUBLISH_ENABLED
+        value: "true"
+      - key: AUTO_PUBLISH_THRESHOLD
+        value: "0.80"
+      - key: GEO_CONF_THRESHOLD
+        value: "0.75"
+      - key: AUTO_PUBLISH_MIN_START_OFFSET_MIN
+        value: "30"
+      - key: AUTO_PUBLISH_MAX_START_OFFSET_DAYS
+        value: "180"
+      - key: TRUST_ADJUST
+        value: "0.05"
+      # Optional geocoding
+      - key: GEOCODER
+        value: mapbox
+      - key: GEOCODER_API_KEY
+        sync: false  # Set manually if using geocoding
+      # Optional features
+      - key: PGVECTOR_ENABLED
+        value: "false"
+      - key: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: ""
+
+databases:
+  - name: williamboard-postgres
+    databaseName: williamboard
+    user: williamboard

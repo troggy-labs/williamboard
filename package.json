@@ -1,0 +1,16 @@
+{
+  "name": "williamboard",
+  "version": "1.0.0",
+  "description": "Event flyer analysis tool",
+  "main": "analyze-flyers.js",
+  "scripts": {
+    "analyze": "node analyze-flyers.js",
+    "test": "node analyze-flyers.js"
+  },
+  "dependencies": {
+    "openai": "^4.67.3",
+    "fs": "*",
+    "path": "*"
+  },
+  "type": "module"
+}
