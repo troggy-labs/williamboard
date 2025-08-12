@@ -90,3 +90,4 @@ databases:
   - name: williamboard-postgres
     databaseName: williamboard
     user: williamboard
+    plan: free
