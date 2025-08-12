@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { FileUpload } from '@/components/FileUpload'
-import { EventMap } from '@/components/EventMap'
-import { EventList } from '@/components/EventList'
+import { FileUpload } from '../components/FileUpload'
+import { EventMap } from '../components/EventMap'
+import { EventList } from '../components/EventList'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'upload' | 'map' | 'events'>('upload')
@@ -61,7 +61,7 @@ export default function Home() {
                 Discover Events from Bulletin Boards
               </h2>
               <p className="mt-4 text-lg text-gray-600">
-                Upload a photo of a bulletin board and we'll extract event information using AI
+                Upload a photo of a bulletin board and we&apos;ll extract event information using AI
               </p>
             </div>
             <FileUpload />
