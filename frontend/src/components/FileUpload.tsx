@@ -21,7 +21,8 @@ export function FileUpload() {
 
     try {
       // Step 1: Get signed URL - call backend directly
-      const signedUrlResponse = await fetch('http://localhost:8080/v1/uploads/signed-url', {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
+    const signedUrlResponse = await fetch(`${apiBaseUrl}/v1/uploads/signed-url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contentType: file.type }),
@@ -43,7 +44,7 @@ export function FileUpload() {
       const formData = new FormData()
       formData.append('file', file)
 
-      const uploadResponse = await fetch(`http://localhost:8080/v1/uploads/${submissionId}`, {
+      const uploadResponse = await fetch(`${apiBaseUrl}/v1/uploads/${submissionId}`, {
         method: 'PUT',
         body: formData,
         // Extended timeout for AI processing

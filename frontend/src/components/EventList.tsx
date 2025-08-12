@@ -24,7 +24,8 @@ export function EventList() {
     const fetchEvents = async () => {
       try {
         // Call backend directly and get all events (upcoming and past)
-        const response = await fetch('http://localhost:8080/v1/events?limit=500&include_past=true')
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
+        const response = await fetch(`${apiBaseUrl}/v1/events?limit=500&include_past=true`)
         if (response.ok) {
           const data = await response.json()
           const eventData = data.features?.map((feature: any) => ({
@@ -63,7 +64,8 @@ export function EventList() {
 
   const downloadICS = async (eventId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/v1/events/${eventId}/ics`)
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
+      const response = await fetch(`${apiBaseUrl}/v1/events/${eventId}/ics`)
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)

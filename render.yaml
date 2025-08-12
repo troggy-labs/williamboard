@@ -72,6 +72,23 @@ services:
       - key: OTEL_EXPORTER_OTLP_ENDPOINT
         value: ""
 
+  # Frontend Next.js service
+  - type: web
+    name: williamboard-frontend
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd frontend && npm ci && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_BASE_URL
+        fromService:
+          type: web
+          name: williamboard-api
+          property: host
+
 databases:
   - name: williamboard-postgres
     databaseName: williamboard
