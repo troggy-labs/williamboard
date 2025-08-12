@@ -1,5 +1,5 @@
 # Render deployment configuration for WilliamBoard
-# Configured for minimal cost: free web services + starter database ($7/month)
+# Configured for minimal cost: free web services + basic database ($25/month)
 services:
   # Main API service with integrated processing
   - type: web
@@ -90,4 +90,4 @@ databases:
   - name: williamboard-postgres
     databaseName: williamboard
     user: williamboard
-    plan: starter
+    plan: basic

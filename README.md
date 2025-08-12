@@ -28,11 +28,11 @@ Unlike typical async upload systems, WilliamBoard processes images **immediately
 This project is configured for minimal-cost deployment:
 
 - **Web Services**: Free tier (sleep after 15 min of inactivity, 30-60s cold start)
-- **Database**: PostgreSQL starter tier ($7/month) - reliable, persistent storage
+- **Database**: PostgreSQL basic tier ($25/month) - production-ready with backups
 - **File storage**: Uses `/tmp` (files are ephemeral and will be lost on restart)
 - **Build time**: Limited build minutes per month
 
-**Total cost: ~$7/month** for reliable database storage. For persistent file storage, upgrade services to starter tier.
+**Total cost: ~$25/month** for production-ready database with backups. For persistent file storage, upgrade services to starter tier.
 
 **Deploy to Render:**
 1. Fork this repository
