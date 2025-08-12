@@ -21,6 +21,25 @@ Unlike typical async upload systems, WilliamBoard processes images **immediately
 - ✅ **Clear success**: No confusing "uploaded but processing" states
 - ✅ **Better errors**: Failed processing = clear retry action
 
+## Deployment
+
+### Free Tier Deployment on Render.com
+
+This project is configured for free tier deployment with the following limitations:
+
+- **Services sleep** after 15 minutes of inactivity (30-60 second cold start)
+- **Database**: PostgreSQL free tier with storage limits  
+- **File storage**: Uses `/tmp` (files are ephemeral and will be lost on restart)
+- **Build time**: Limited build minutes per month
+
+For production use, consider upgrading to paid tiers for persistent storage and always-on services.
+
+**Deploy to Render:**
+1. Fork this repository
+2. Connect to [render.com](https://render.com)
+3. Set `OPENAI_API_KEY` environment variable
+4. Deploy using the included `render.yaml`
+
 ## Quick Start
 
 ### Prerequisites
