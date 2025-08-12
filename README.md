@@ -25,14 +25,14 @@ Unlike typical async upload systems, WilliamBoard processes images **immediately
 
 ### Free Tier Deployment on Render.com
 
-This project is configured for free tier deployment with the following limitations:
+This project is configured for minimal-cost deployment:
 
-- **Services sleep** after 15 minutes of inactivity (30-60 second cold start)
-- **Database**: PostgreSQL free tier with storage limits  
+- **Web Services**: Free tier (sleep after 15 min of inactivity, 30-60s cold start)
+- **Database**: PostgreSQL starter tier ($7/month) - reliable, persistent storage
 - **File storage**: Uses `/tmp` (files are ephemeral and will be lost on restart)
 - **Build time**: Limited build minutes per month
 
-For production use, consider upgrading to paid tiers for persistent storage and always-on services.
+**Total cost: ~$7/month** for reliable database storage. For persistent file storage, upgrade services to starter tier.
 
 **Deploy to Render:**
 1. Fork this repository
