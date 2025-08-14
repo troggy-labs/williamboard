@@ -84,6 +84,16 @@ func connectDB(cfg *config.Config) (*gorm.DB, error) {
 }
 
 func migrateDB(db *gorm.DB) error {
+	// Create required extensions first
+	if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`).Error; err != nil {
+		return fmt.Errorf("failed to create uuid-ossp extension: %w", err)
+	}
+	
+	if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "postgis"`).Error; err != nil {
+		return fmt.Errorf("failed to create postgis extension: %w", err)
+	}
+	
+	// Now run AutoMigrate
 	return db.AutoMigrate(
 		&models.Submission{},
 		&models.Flyer{},
