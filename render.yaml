@@ -35,10 +35,7 @@ services:
       - key: IMAGE_JPEG_QUALITY
         value: "85"
       - key: PUBLIC_BASE_URL
-        fromService:
-          type: web
-          name: williamboard-api
-          property: host
+        value: https://williamboard-api.onrender.com
       - key: ICS_UID_DOMAIN
         value: williamboard.app
       - key: ICS_PRODID
