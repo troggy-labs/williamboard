@@ -9,6 +9,12 @@ services:
     plan: free
     buildCommand: go build -o williamboard-api ./api
     startCommand: ./williamboard-api
+    buildFilter:
+      paths:
+      - api/**
+      - go.mod
+      - go.sum
+      - render.yaml
     envVars:
       - key: APP_NAME
         value: WilliamBoard
@@ -74,6 +80,10 @@ services:
     plan: free
     buildCommand: cd frontend && npm ci && npm run build
     startCommand: cd frontend && npm start
+    buildFilter:
+      paths:
+      - frontend/**
+      - render.yaml
     envVars:
       - key: NODE_ENV
         value: production
