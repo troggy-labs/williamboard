@@ -81,10 +81,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_BASE_URL
-        fromService:
-          type: web
-          name: williamboard-api
-          property: host
+        value: https://williamboard-api.onrender.com
 
 databases:
   - name: williamboard-postgres
