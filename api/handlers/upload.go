@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -309,6 +310,12 @@ func (h *UploadHandler) processEventCandidate(ctx context.Context, candidate *mo
 		candidate.PublishResult = &published
 		reason := "auto-published (high quality score)"
 		candidate.PublicationReason = &reason
+		
+		// Auto-promote to public event
+		if err := h.promoteToPublicEvent(h.db, candidate); err != nil {
+			log.Printf("Failed to promote auto-published candidate %s to public event: %v", candidate.ID, err)
+			// Don't fail the entire process, just log the error
+		}
 	} else {
 		needsReview := "needs_review"
 		candidate.PublishResult = &needsReview
@@ -437,4 +444,114 @@ func (h *UploadHandler) updateSubmissionStatus(submissionID uuid.UUID, status st
 			"status":     status,
 			"updated_at": time.Now(),
 		}).Error
+}
+
+// promoteToPublicEvent creates an Event record from an approved EventCandidate
+func (h *UploadHandler) promoteToPublicEvent(db *gorm.DB, candidate *models.EventCandidate) error {
+	// Parse the fields JSON to extract event data
+	var fields map[string]interface{}
+	if err := json.Unmarshal([]byte(candidate.Fields), &fields); err != nil {
+		return fmt.Errorf("failed to parse event fields: %v", err)
+	}
+
+	// Extract required title field
+	title, ok := fields["title"].(string)
+	if !ok || title == "" {
+		return fmt.Errorf("event title is required")
+	}
+
+	// Parse start time - try different formats
+	startTs := time.Now().Add(24 * time.Hour) // fallback to tomorrow to ensure future events
+	
+	// Check both "date" and "date_time" fields for compatibility
+	var dateStr string
+	if date, ok := fields["date"].(string); ok && date != "" {
+		dateStr = date
+	} else if dateTime, ok := fields["date_time"].(string); ok && dateTime != "" {
+		dateStr = dateTime
+	}
+	
+	if dateStr != "" {
+		log.Printf("Parsing date string: %s for event: %s", dateStr, title)
+		// Try parsing different date formats
+		formats := []string{
+			"2006-01-02T15:04:05",    // ISO format first (most common from LLM)
+			"2006-01-02 15:04:05",
+			"2006-01-02T15:04",
+			"2006-01-02 15:04",
+			"2006-01-02",
+			"January 2, 2006",
+			"Jan 2, 2006",
+		}
+		
+		parsed := false
+		for _, format := range formats {
+			if parsedTime, err := time.Parse(format, dateStr); err == nil {
+				log.Printf("Successfully parsed '%s' as '%s' using format '%s'", dateStr, parsedTime.String(), format)
+				// If the parsed date is in the past, assume it's for next year
+				if parsedTime.Before(time.Now()) {
+					parsedTime = parsedTime.AddDate(1, 0, 0)
+					log.Printf("Date was in past, moved to next year: %s", parsedTime.String())
+				}
+				startTs = parsedTime
+				parsed = true
+				break
+			}
+		}
+		
+		// If we couldn't parse the date, keep the fallback
+		if !parsed {
+			log.Printf("Failed to parse date '%s', using fallback", dateStr)
+			startTs = time.Now().Add(24 * time.Hour)
+		} else {
+			log.Printf("Final startTs for event '%s': %s", title, startTs.String())
+		}
+	}
+
+	// Create canonical key for deduplication (title + date)
+	canonicalKey := strings.ToLower(strings.TrimSpace(title)) + "_" + startTs.Format("2006-01-02")
+
+	// Check if this event already exists
+	var existingEvent models.Event
+	if err := db.Where("canonical_key = ?", canonicalKey).First(&existingEvent).Error; err == nil {
+		// Event already exists, just update moderation state if needed
+		if existingEvent.ModerationState != "approved" {
+			return db.Model(&existingEvent).Update("moderation_state", "approved").Error
+		}
+		log.Printf("Event already exists and is approved: %s", title)
+		return nil // Already published
+	}
+
+	// Create new Event record
+	event := models.Event{
+		CanonicalKey:    canonicalKey,
+		Title:           title,
+		StartTs:         startTs,
+		Source:          "flyer",
+		PublishedVia:    "auto",
+		QualityScore:    candidate.CompositeScore,
+		ModerationState: "approved",
+	}
+
+	// Extract optional fields
+	if desc, ok := fields["description"].(string); ok && desc != "" {
+		event.Description = &desc
+	}
+	if url, ok := fields["url"].(string); ok && url != "" {
+		event.URL = &url
+	}
+	if price, ok := fields["price"].(string); ok && price != "" {
+		event.Price = &price
+	}
+	if organizer, ok := fields["organizer"].(string); ok && organizer != "" {
+		event.Organizer = &organizer
+	}
+
+	// Save the event
+	if err := db.Create(&event).Error; err != nil {
+		return fmt.Errorf("failed to create event: %v", err)
+	}
+
+	log.Printf("Successfully created public event '%s' (ID: %s) from auto-published candidate", title, event.ID)
+	return nil
 }
